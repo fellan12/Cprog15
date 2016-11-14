@@ -1,0 +1,345 @@
+0.1  MAKE IT HAPPEN  
+--------------------------------------------------------------------------------
+:::: What does `$*` mean inside a makefile?
+--------------------------------------------------------------------------------
+
+Answer: Den matchar det "variebler/argument" det du skriver vid make:ningen,
+        så att rätt fil kompileras
+
+        t.ex "make hello.out" ===> "g++ -std=c++0x -g -Wall hello.cpp -o hello.out"
+
+--------------------------------------------------------------------------------
+:::: What is the purpose of `-Wall` and -g, when passed as arguments to g++?
+--------------------------------------------------------------------------------
+
+Answer: -Wall: att varningar ska vara på
+        -g: att det ska generera debugging-info
+
+--------------------------------------------------------------------------------
+:::: Is it possible to store the previous mentioned flags in a variable in the makefile?
+--------------------------------------------------------------------------------
+
+Answer: ja, geonom att skriva en variabel i makefile med flaggorna du vill ha sparade
+
+--------------------------------------------------------------------------------
+:::: What is the difference between an object file, and an executable?
+--------------------------------------------------------------------------------
+
+Answer: Skillnaden är att objektfiler har olösta externa referenser, medan a.out filer inte.
+        En executebar fil har helt färdiga instruktioner och kan köras direkt.
+
+--------------------------------------------------------------------------------
+
+
+
+0.2  HELLO WORLD
+--------------------------------------------------------------------------------
+:::: If you invoke touch hello.cpp prior to invoking make
+
+    – How many files were rebuilt?
+    – Why?
+--------------------------------------------------------------------------------
+
+Answer: Då kommer alla filer som includar hello.h att kompileras igenom
+
+-------------------------------------------------------------------------------
+:::: Why do you think make checks the modification timestamp of the relevant files as
+      part of deciding what to do?
+-------------------------------------------------------------------------------
+
+Answers: Beroende på vilka filer som är updaterade så måste man kompilera olika filer för att
+         programmet ska fungera korrekt. Om en fil som ska kompileras och inte gör det, så
+         kan programmet inte fungera korrekt.
+
+-------------------------------------------------------------------------------
+:::: What is the purpose of `std::cout`, `std::cerr`, and `std::clog`,
+     respectively?
+-------------------------------------------------------------------------------
+
+Answer: std::cout används normalt för vanliga contol meddeladnde
+		std::cerr används för error meddelenade
+		std::clog används för logging, men det kan lite vad du vill
+
+-------------------------------------------------------------------------------
+
+
+
+
+0.3  TRAIN SPOTTING
+
+    int powerof (int x, int y) {
+      int res = 1;
+
+      for (int i = 0; i < y; ++i);
+        res *= x;
+
+      return res;
+    }
+
+    int main () {
+      int const a = 2;
+      int const b = 4;
+
+      int   x = powerof(a, b); 
+      float y = 3.1415;
+
+      std::cout << a << "^" << b << " = " << x << ";\n";
+
+      if (y == 3.1415)
+        std::cout << y << " is equal to 3.1415!\n";
+      else
+        std::cout << y << " is not equal to 3.1415!\n";
+    }
+
+--------------------------------------------------------------------------------
+:::: Why does not `powerof` return the expected value (16), when invoked with 2 and 4?
+--------------------------------------------------------------------------------
+
+Answer: För att det är ett semi-kolon direkt efter for-loppen, vilket resulterar att
+		res inte inkluderas i loopen
+
+--------------------------------------------------------------------------------
+:::: Why does not `y` compare equal to 3.1415?
+--------------------------------------------------------------------------------
+
+Answer: Det är för att "y" är en float och siffran 3.1415 "ses" som en double,
+		det för att float 3.1415 och double 3.1415 inte ses som lika,
+		då alla egenskaper inte stämmer.
+
+--------------------------------------------------------------------------------
+:::: Is there any difference in behavior if we compare `y` to 3.1415f, if so: why?
+--------------------------------------------------------------------------------
+
+Answer: Nu jämförs allt rätt, y som är av float jämförs med 3.1415f som är 3.1415 fast i float
+
+--------------------------------------------------------------------------------
+:::: What is the recommended method to use when trying to determine if
+:::: two floating-point values are equal, and why?
+--------------------------------------------------------------------------------
+
+Answer: Det finns inget rätt sätt, men det "bästa" skulle vara att tar fram diffen mellan
+		talen och kollar om det är mindre än ett visst "epsilon", så det är godtagbart lika.
+
+		Ex)
+		bool AreSame(double a, double b){
+   			return fabs(a - b) < EPSILON;
+		}
+
+--------------------------------------------------------------------------------
+
+
+0.4 DOES IT FIT
+
+int count_if_followed_by (char const * p, int len, char a, char b) {
+  int        count = 0;
+  char const * end = p + len;
+
+  while (p != end) {
+    if (*p == a && *(p+1) == b)
+      count += 1;
+
+    ++p;
+  }
+
+--------------------------------------------------------------------------------
+:::: Why is it important to test the boundary conditions of an implementation,
+     especially in the case of `count_if_followed_by`?
+--------------------------------------------------------------------------------
+
+Answer: I detta fall så är det extra vikigt så du sätter variabeln end till p + len
+		och om len är större än strängen som p representerar så kan du hamna utanför
+		din minnesarea och saker går fel.
+
+--------------------------------------------------------------------------------
+
+
+
+0.5 WILL IT FLOAT (birth.cpp)
+
+class A {
+public:
+   A () {
+     std::cout << "default-constructor" << std::endl;
+   }
+
+   A (A const& src) {
+     std::cout << "copy-constructor" << std::endl;
+   }
+
+  ~A () {
+    std::cout << "destructor" << std::endl;
+  }
+
+   A(char const* s) {
+      std::cout << "some other constructor" << std::endl;
+   }
+
+   A& operator= (A const& src) {
+     std::cout << "the assignment operator" << std::endl;
+     return *this;
+   }
+};
+
+void no_ref(A a) {}
+void with_ref(const A & a) {}
+
+int main()
+{
+    A a("my name is a");
+
+    A b = a;          // what is the difference
+    A c(a);           // between these three
+    A d;              // forms of initialization?
+
+    d = a;
+
+      no_ref (a);     // will this copy the value of `a`?
+    with_ref (a);     // will this copy the value of `a`?
+
+    A *aa = new A[5];
+    delete aa;        // what will happen?
+    return 0;
+}
+
+--------------------------------------------------------------------------------
+:::: What different constructors are invoked, and when?
+--------------------------------------------------------------------------------
+
+Answer: The first constructor phase that is invoked is "some other constructor"-constructor on "a".
+		The second constructor phase that is invoked is a "copy-constructor"-constructor on "b" with "a".
+		The third constructor phase that is invoked is a "copy-constructor"-constructor on "c" with "a".
+		The fourth constructor phase that is invoked is "default-constructor"-constructor on "d"
+		The fifth constructor phase that is invoked is a "the assignment operator"-constructor on "d" with "a"
+
+--------------------------------------------------------------------------------
+:::: Will there be any temporaries created, if so; when?
+--------------------------------------------------------------------------------
+
+Answer: No temps of A are created.
+
+--------------------------------------------------------------------------------
+:::: When are the objects destructed, an why?
+--------------------------------------------------------------------------------
+
+Answer: First case is when returned from no_ref() where it is a destruction of
+		a copy.
+		Second case is on "delete aa" (assuming the right delete operator is used)
+		then the destructor will be called 5 times.
+		Third case is at the end of the program, where all the undestructed "A" variables
+		will be destructed.
+
+--------------------------------------------------------------------------------
+:::: What will happen if we try to free the dynamically allocated
+:::: memory through `delete p`, instead of `delete [] p`?
+
+Answer: Depening on the data type it could work or not, it goes under the 
+		"undefined behaviour" part of the language. 
+
+--------------------------------------------------------------------------------
+
+
+0.5 WILL IT FLOAT (bad_plumming.cpp)
+
+struct Data {
+    int x, y, z;
+};  
+
+Data ** foo(Data ** v, int x) {
+    for (int i = 0; i < x; i++)
+        if (v[i] != 0)
+            v[i] = new Data;
+    return v;
+}
+
+int main () {
+    const int size = 5;
+    Data ** v = new Data * [size];
+    foo(v, size);
+}
+
+--------------------------------------------------------------------------------
+:::: valgrind indicates that the program suffers from a few problems, which and
+:::: why?
+--------------------------------------------------------------------------------
+
+Answer: - There is uninitialized values, which is because the
+		'v' array in the main function is never initialized (an array of
+  		pointers/arrays is created, but the subpointers/arrays are never set to point
+  		to anything).
+  		- Memory leaks, because the 'v' array is never destroyed with a delete[] call.
+
+--------------------------------------------------------------------------------
+:::: If you comment out the entire if-block in foo, is there any difference in
+:::: how much memory that is leaked?
+--------------------------------------------------------------------------------
+
+Answer: No, because there is still no delete[] call.
+
+--------------------------------------------------------------------------------
+:::: Revert bad_plumming.cpp to its original state, and comment out
+:::: only the line that contains the if-condition.
+::::
+:::: If you now change the last line of `main` to the following; why is it
+:::: that valgrind still issue diagnostics related to memory management?
+::::
+:::: Data ** p = foo (v, size);
+:::: delete [] p;
+--------------------------------------------------------------------------------
+
+Answer: The top-level pointer are deallocated, but the pointers in the array are not. 
+		You need to dereference each value in the 'v' array and delete[] 
+		those subpointers as well.
+
+--------------------------------------------------------------------------------
+
+
+
+0.6  THE SIMPLE CONTAINER
+--------------------------------------------------------------------------------
+:::: `operator[]` must in some cases be marked as `const`, but not always; when,
+:::: and why?
+--------------------------------------------------------------------------------
+
+Answer: When you use an operator[] you sometimes only want to read a values (get-value) then 
+        its conveninet to have const so that the values in the array is not 
+        altered during the operation. But when u want to set a value to the array
+        you skip the const.
+
+--------------------------------------------------------------------------------
+:::: The semantics of copying a UIntVector might not be trivial; why must we 
+:::: manually implement the relevant code, instead of having the compiler generate
+:::: it for us?
+--------------------------------------------------------------------------------
+
+Answer: Default copy constructors are generated automatically if you don't specify our own.
+        They just copy all the classes members by value to the new class.
+
+        The problem here is when you have pointers as class members.
+        The default copy constructor will just copy the address that his held by the pointer.
+        This means that both the original and the copied variable now points to the same object.
+        which is not what u want in this case. U don't want two variabls to point
+        to the same array. 
+
+--------------------------------------------------------------------------------
+
+
+
+0.7  THE TEMPLATE VECTOR
+--------------------------------------------------------------------------------
+:::: Iterating over a range of elements can be done with a range-based for-loop,
+:::: but the type of `source` must meet certain requirements; what are they?
+--------------------------------------------------------------------------------
+
+Answer: ...
+
+--------------------------------------------------------------------------------
+:::: The C++ Standard sometimes state that a type in the Standard Library is
+:::: "unspecified"; why do you think that is?
+--------------------------------------------------------------------------------
+
+Answer: ...
+
+--------------------------------------------------------------------------------
+
+
+
